@@ -38,17 +38,19 @@ sudo apt install nginx
 ```bash
 sudo cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.bkp
 sudo cp api.nginx.conf /etc/nginx/nginx.conf
+```
+**Step 3b.** [optional] Generate your own random string and insert it into the `nginx.conf` file:
+```bash
+sed -i "s|return 200 \".*\"|return 200 \"$(python -c "exec(\"from os import urandom; from base64 import b64encode; print(b64encode(urandom(1024)).decode(\\\"utf-8\\\"))\")")\"|" api.nginx.conf
+sudo cp api.nginx.conf /etc/nginx/nginx.conf
+```
+
+**Step 4.** Restart NGINX:
+```bash
 sudo systemctl restart nginx
 ```
-**Step 3b.** [optional] Generate your own random string:
-```bash
-python
-from os import urandom
-from base64 import b64encode
-print(b64encode(urandom(1024)).decode('utf-8'))
-exit()
-```
-**Step 4.** Test the backend API is working:
+
+**Step 5.** Test the backend API is working:
 ```bash
 curl 127.0.0.1:1980
 ```
@@ -66,7 +68,8 @@ We added this to the end of the file:
 * soft nofile 65536
 * hard nofile 65536
 ```
-Log out and back in
+Log out and back in.
+
 **Step 2.** We installed Go and Vegeta:
 ```bash
 sudo apt update
@@ -94,7 +97,8 @@ We added this to the end of the file:
 * soft nofile 65536
 * hard nofile 65536
 ```
-Log out and back in
+Log out and back in.
+
 **Step 2.** We secure copied to the instances our NGINX certificate and key and put them in place:
 ```bash
 sudo mkdir -p /etc/ssl/nginx
@@ -107,21 +111,23 @@ sudo yum update
 sudo yum install vim ca-certificates epel-release
 ```
 **Step 4.** We install repos, NGINX Plus, security rules, and new configs:
+
 No Security
 ```bash
 sudo wget -P /etc/yum.repos.d https://cs.nginx.com/static/files/nginx-plus-7.4.repo
 sudo yum install nginx-plus
-nginx -v
+nginx -v # check the nginx version to ensure it is installed properly
 sudo cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.bkp
 sudo cp nosec.nginx.conf /etc/nginx/nginx.conf
 sudo systemctl restart nginx
 ```
+
 Mod Security
 ```bash
 sudo wget -P /etc/yum.repos.d https://cs.nginx.com/static/files/nginx-plus-7.4.repo
 sudo wget -P /etc/yum.repos.d https://cs.nginx.com/static/files/modsecurity-7.repo
 sudo yum install nginx-plus nginx-plus-module-modsecurity
-nginx -v
+nginx -v # check the nginx version to ensure it is installed properly
 wget https://github.com/SpiderLabs/owasp-modsecurity-crs/archive/v3.0.2.tar.gz
 tar -xzvf v3.0.2.tar.gz
 sudo mkdir /etc/nginx/modsec/owasp/
@@ -133,21 +139,24 @@ sudo cp modsec.main.conf /etc/nginx/modsec/main.conf
 sudo vim /etc/nginx/modsec/main.conf
 sudo systemctl restart nginx
 ```
-AppProtect WAF
+
+NGINX App Protect WAF
 ```bash
 sudo wget -P /etc/yum.repos.d https://cs.nginx.com/static/files/nginx-plus-7.4.repo
 sudo wget -P /etc/yum.repos.d https://cs.nginx.com/static/files/app-protect-7.repo
 sudo wget -P /etc/yum.repos.d https://cs.nginx.com/static/files/app-protect-security-updates-7.repo
 sudo yum install nginx-plus app-protect app-protect-attack-signatures app-protect-threat-campaigns
-nginx -v
+nginx -v # check the nginx version to ensure it is installed properly
 sudo cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.bkp
 sudo cp appp.nginx.conf /etc/nginx/nginx.conf
 sudo systemctl restart nginx
 ```
+
 **Step 5.** Test that security is working properly:
+
 ```bash
 curl "http://localhost/"
-curl "http://localhost?a=<script>"
+curl "http://localhost/?a=<script>"
 ```
 
 ## AWS WAF
